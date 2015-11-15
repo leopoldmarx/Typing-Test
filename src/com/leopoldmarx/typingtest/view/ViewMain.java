@@ -24,7 +24,7 @@ import javafx.util.Duration;
 
 public class ViewMain extends Application
 {
-	private static final String name = "Typing Test";
+	private static final String NAME = "Typing Test";
 	
 	private ArrayList<String> typingWords = new ArrayList<>();
 	private ArrayList<String> typedWords  = new ArrayList<>();
@@ -41,8 +41,8 @@ public class ViewMain extends Application
 	private TextFlow textFlow = new TextFlow();
 	private JFXButton resetButton = new JFXButton("Reset");
 	
-	private static final int  fontSize = 20;
-	private static final Font FONT = new Font("Devanagari MT", fontSize);
+	private static final int  FONTSIZE = 20;
+	private static final Font FONT = new Font("Devanagari MT", FONTSIZE);
 	
 	private static final Integer STARTTIME = 60;
 	private Timeline timeline;
@@ -57,11 +57,15 @@ public class ViewMain extends Application
 	@Override
 	public void start(Stage window) throws Exception
 	{
-		window.setTitle(name);
+		window.setTitle(NAME);
 		window.setWidth(700);
 		window.setHeight(450);
-		window.widthProperty().addListener(e -> 
-				textFlow.setPrefWidth(window.getWidth() - 20));
+		window.widthProperty().addListener(e -> {
+			for (HBox h : hBoxArray)
+			{
+				//TODO add responsivness to components
+			}
+		});
 		
 		resetButton.setRipplerFill(Color.MAROON);
 		resetButton.setPadding(new Insets(20));
@@ -69,7 +73,6 @@ public class ViewMain extends Application
 		
 		resetButton.setOnAction(e -> 
 		{
-			//TODO reset all variables
 			typingWords.clear();
 			typedWords.clear();
 			index = 0;
@@ -77,16 +80,16 @@ public class ViewMain extends Application
 			field.setDisable(false);
 			textFlow = new TextFlow();
 			timeline = null;
-			timerLabel = new Label(STARTTIME.toString());
 			previousWord = "";
-			
-			timerLabel.setFont(Font.font("Devanagari MT", FontWeight.BOLD, fontSize));
+			timerLabel.setText(STARTTIME.toString());
+			wpm.setText("0");
+			cpm.setText("0");
 			
 			for (int i = 1; i <= 20; i++)
 			{
 				String temp = w.randomWord();
 				Text t = new Text(i % 10 == 0 ? temp + "\n" : temp + " ");
-				t.setFont(i == 1 ? Font.font("Devanagari MT", FontWeight.BOLD, fontSize) : FONT);
+				t.setFont(i == 1 ? Font.font("Devanagari MT", FontWeight.BOLD, FONTSIZE) : FONT);
 				textFlow.getChildren().add(t);
 				typingWords.add(temp);
 			}
@@ -101,7 +104,7 @@ public class ViewMain extends Application
 		{
 			String temp = w.randomWord();
 			Text t = new Text(i % 10 == 0 ? temp + "\n" : temp + " ");
-			t.setFont(i == 1 ? Font.font("Devanagari MT", FontWeight.BOLD, fontSize) : FONT);
+			t.setFont(i == 1 ? Font.font("Devanagari MT", FontWeight.BOLD, FONTSIZE) : FONT);
 			textFlow.getChildren().add(t);
 			typingWords.add(temp);
 		}
@@ -114,52 +117,48 @@ public class ViewMain extends Application
 		
 		field.setOnKeyTyped(e -> 
 		{
-			String typingWord = field.getText().toLowerCase();
+			String fieldWord = field.getText().toLowerCase();
 			
 			if (    (int)(e.getCharacter().charAt(0)) >= 65 &&
 					(int)(e.getCharacter().charAt(0)) <= 122)
-				typingWord += e.getCharacter().toLowerCase().charAt(0);
+				fieldWord += e.getCharacter().toLowerCase().charAt(0);
 			
 			//Backspace to previous word
-			if (    typingWord.isEmpty()               && 
+			if (    fieldWord.isEmpty()                && 
 					e.getCharacter().charAt(0) == '\b' && 
 					typedWords.size() != 0             &&
-					typingWord.equals(previousWord))
+					fieldWord.equals(previousWord))
 			{
 				index--;
 				field.setText(typedWords.get(typedWords.size() - 1));
 				typedWords.remove(typedWords.size() - 1);
 				field.positionCaret(field.getText().length());
-				previousWord = typingWord;
+				previousWord = fieldWord;
 				
 				for (int i = 1; i <= 10 && (index) % 10 == 9; i++)
-				{
 					typingWords.remove(typingWords.get(typingWords.size() - 1));
-				}
 			}
 			
 			//Add word to array and clear TextField when space is pressed
 			else if (Character.isWhitespace(e.getCharacter().charAt(0)))
 			{
 				index++;
-				typedWords.add(typingWord);
+				typedWords.add(fieldWord);
 				field.clear();
 				e.consume();
-				typingWord =  "";
+				fieldWord =  "";
 				previousWord = "";
 				
 				for (int i = 1; i <= 10 && (index) % 10 == 0; i++)
-				{
 					typingWords.add(w.randomWord());
-				}
 			}
 			
 			else 
 			{
-				previousWord = typingWord;
+				previousWord = fieldWord;
 			}
 			
-			//Update TextFlow
+			//Update TextFlow, bold current word, and color wrong words.
 			Text tempText;
 			TextFlow tf = new TextFlow();
 			
@@ -175,22 +174,22 @@ public class ViewMain extends Application
 				tf.getChildren().add(tempText);
 			}
 			
-			//Comparing typed word to random word
 			tempText = new Text((index + 1) % 10 == 0
 					? typingWords.get(typedWords.size()) + "\n"
 					: typingWords.get(typedWords.size()) + " ");
-			tempText.setFont(Font.font("Devanagari MT", FontWeight.BOLD, fontSize));
+			
+			tempText.setFont(Font.font("Devanagari MT", FontWeight.BOLD, FONTSIZE));
+			
 			try
 			{
-				if (!typingWord.equals(
+				if (!fieldWord.equals(
 						typingWords.get(typedWords.size()).
-						substring(0, typingWord.length())))
+						substring(0, fieldWord.length())))
 					tempText.setFill(Color.RED);
 				
 			} catch (Exception e1)
 			{
 				tempText.setFill(Color.RED);
-				//e1.printStackTrace();
 			}
 			
 			tf.getChildren().add(tempText);
@@ -210,7 +209,7 @@ public class ViewMain extends Application
 			//timer and functionality
 			if (typedWords.isEmpty())
 			{
-				if (timeline != null)timeline.stop();
+				if (timeline != null) timeline.stop();
 				
 				timeSeconds = STARTTIME;
 				
@@ -223,23 +222,36 @@ public class ViewMain extends Application
 						{
 							timeSeconds--;
 							
-							float t = typedWords.size();
-							Integer temp = (int) (60 * t / timeSeconds.floatValue());
+							int wordCount = 0;
+							int charCount = 0;
+							for (int i = 0; i < typedWords.size(); i++){
+								if (typingWords.get(i).equals(typedWords.get(i)))
+								{
+									wordCount++;
+									charCount += typingWords.get(i).length();
+								}
+							}
+							
+							float t = wordCount;
+							Integer temp = (int) (STARTTIME * t / (STARTTIME - timeSeconds.floatValue()));
 							wpm.setText(temp.toString());
 							
-							int numberOfCharecters = 0;
-							for (String typedWord: typedWords)
-								numberOfCharecters += typedWord.length();
-							
-							temp = (int) (60 * numberOfCharecters / timeSeconds.floatValue());
+							temp = (int) (STARTTIME * charCount / (STARTTIME - timeSeconds.floatValue()));
 							cpm.setText(temp.toString());
 							
 							timerLabel.setText(timeSeconds.toString());
+							
 							if (timeSeconds <= 0)
 							{
 								timeline.stop();
-								// TODO WHERE THE CODE GOES WHEN COMPLETED
+								
 								field.setDisable(true);
+								
+								Integer wordCountInteger = wordCount;
+								Integer charCountInteger = charCount;
+								
+								wpm.setText(wordCountInteger.toString());
+								cpm.setText(charCountInteger.toString());
 							}
 						})
 				);
@@ -247,16 +259,18 @@ public class ViewMain extends Application
 			}
 		});
 		
+		Font infoFont = Font.font("Devanagari MT", FontWeight.BOLD, 25);
+		
 		Label seconds  = new Label("Seconds: ");
 		Label wpmLabel = new Label("WPM: ");
 		Label cpmLabel = new Label("CMP: ");
-		seconds .setFont(Font.font("Devanagari MT", FontWeight.BOLD, 25));
-		wpmLabel.setFont(Font.font("Devanagari MT", FontWeight.BOLD, 25));
-		cpmLabel.setFont(Font.font("Devanagari MT", FontWeight.BOLD, 25));
+		seconds .setFont(infoFont);
+		wpmLabel.setFont(infoFont);
+		cpmLabel.setFont(infoFont);
 		
-		timerLabel.setFont(Font.font("Devanagari MT", FontWeight.BOLD, 25));
-		wpm       .setFont(Font.font("Devanagari MT", FontWeight.BOLD, 25));
-		cpm       .setFont(Font.font("Devanagari MT", FontWeight.BOLD, 25));
+		timerLabel.setFont(infoFont);
+		wpm       .setFont(infoFont);
+		cpm       .setFont(infoFont);
 		
 		hBoxArray.add(new HBox(seconds, timerLabel));
 		hBoxArray.add(new HBox(wpmLabel, wpm));
