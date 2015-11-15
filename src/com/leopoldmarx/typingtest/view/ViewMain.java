@@ -1,5 +1,7 @@
 package com.leopoldmarx.typingtest.view;
 
+import java.awt.Canvas;
+import java.awt.Window;
 import java.util.ArrayList;
 
 import com.jfoenix.controls.JFXButton;
@@ -10,15 +12,20 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -37,12 +44,15 @@ public class ViewMain extends Application
 	private BorderPane borderPane = new BorderPane();
 	private HBox bottomHBox = new HBox(20);
 	private ArrayList<HBox> hBoxArray = new ArrayList<>();
+	private Scene mainScene = new Scene(borderPane);
+	private Scene completeScene;
 	
 	private Words w = new Words();
 	
 	private JFXTextField field = new JFXTextField();
 	private TextFlow textFlow = new TextFlow();
 	private JFXButton resetButton = new JFXButton("Reset");
+	private JFXButton restart = new JFXButton("Restart");
 	
 	private static final int  FONTSIZE = 20;
 	private static final Font COMMONFONT = new  Font("Devanagari MT", FONTSIZE);
@@ -62,9 +72,12 @@ public class ViewMain extends Application
 	
 	private String previousWord;
 	
+	private Stage window;
+	
 	@Override
-	public void start(Stage window) throws Exception
+	public void start(Stage stage) throws Exception
 	{
+		window = stage;
 		window.setTitle(NAME);
 		window.setMinWidth(WIDTH);
 		window.setMinHeight(HEIGHT);
@@ -264,22 +277,53 @@ public class ViewMain extends Application
 							{
 								timeline.stop();
 								
-								field.setDisable(true);
-								
 								Integer wordCountInteger = wordCount;
 								Integer charCountInteger = charCount;
 								
-								wpm.setText(wordCountInteger.toString());
-								cpm.setText(charCountInteger.toString());
+								window.setScene(completeScene(
+										wordCountInteger.toString(),
+										charCountInteger.toString()));
 								
-								ViewResults vr = new ViewResults(
-										wordCountInteger.toString(), 
-										charCountInteger.toString());
-								vr.display();
+								randomWords.clear();
+								typedWords.clear();
+								index = 0;
+								field.clear();
+								textFlow = new TextFlow();
+								timeline = null;
+								previousWord = "";
+								timerLabel.setText(STARTTIME.toString());
+								wpm.setText("0");
+								cpm.setText("0");
+								
+								for (int i = 1; i <= 20; i++)
+								{
+									String temp1 = w.randomWord();
+									Text t1 = new Text(i % 10 == 0 && i != 20
+											? temp1 + "\n" 
+											: temp1 + " ");
+									t1.setFont(i == 1 ? BOLDFONT : COMMONFONT);
+									textFlow.getChildren().add(t1);
+									randomWords.add(temp1);
+								}
+								
+								textFlow.setPadding(new Insets(20, 30, 0, 30));
+								borderPane.setTop(textFlow);
 							}
 						})
 				);
 				timeline.playFromStart();
+			}
+		});
+		
+		restart.setOnAction(e -> 
+		{
+			if (borderPane.getScene() == null)
+			{
+				Scene scene = new Scene(borderPane);
+				window.setScene(scene);
+			}
+			else {
+				window.setScene(borderPane.getScene());
 			}
 		});
 		
@@ -302,16 +346,47 @@ public class ViewMain extends Application
 		for (HBox h : hBoxArray)
 			h.setPadding(new Insets(6, 0, 0, 0));
 		
-		bottomHBox.getChildren().add(resetButton);
 		bottomHBox.getChildren().addAll(hBoxArray);
+		bottomHBox.getChildren().add(resetButton);
 		bottomHBox.setPadding(new Insets(0, 30, 15, 30));
 		
 		borderPane.setTop(textFlow);
 		borderPane.setCenter(field);
 		borderPane.setBottom(bottomHBox);
-		Scene s = new Scene(borderPane);
 		window.getIcons().add(icon);
-		window.setScene(s);
+		window.setScene(mainScene);
+		//window.setScene(completeScene("30", "299"));
 		window.show();
+	}
+	
+	private Scene completeScene(String wpm, String cpm)
+	{
+		VBox vBox = new VBox();
+		vBox.setPadding(new Insets(50));
+		vBox.setSpacing(20);
+		
+		Scene scene = new Scene(vBox);
+		
+		Label congradulations = new Label("Congradulations!");
+		congradulations.setAlignment(Pos.CENTER);
+		congradulations.setTextAlignment(TextAlignment.CENTER);
+		congradulations.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		congradulations.setFont(new Font("Devanagari MT", 25));
+		
+		Label infoLabel = new Label(wpm + " WPM, " + cpm + " CPM");
+		infoLabel.setAlignment(Pos.CENTER);
+		infoLabel.setTextAlignment(TextAlignment.CENTER);
+		infoLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		infoLabel.setFont(INFOFONT);
+		
+		restart.setAlignment(Pos.CENTER);
+		restart.setTextAlignment(TextAlignment.CENTER);
+		restart.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		restart.setPadding(new Insets(8, 20, 8, 20));
+		restart.setFont(new Font("Devanagari MT", 25));
+		
+		vBox.getChildren().addAll(congradulations, infoLabel, restart);
+		
+		return scene;
 	}
 }
