@@ -1,7 +1,5 @@
 package com.leopoldmarx.typingtest.view;
 
-import java.awt.Canvas;
-import java.awt.Window;
 import java.util.ArrayList;
 
 import com.jfoenix.controls.JFXButton;
@@ -18,8 +16,6 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -45,7 +41,6 @@ public class ViewMain extends Application
 	private HBox bottomHBox = new HBox(20);
 	private ArrayList<HBox> hBoxArray = new ArrayList<>();
 	private Scene mainScene = new Scene(borderPane);
-	private Scene completeScene;
 	
 	private Words w = new Words();
 	
@@ -82,20 +77,14 @@ public class ViewMain extends Application
 		window.setMinWidth(WIDTH);
 		window.setMinHeight(HEIGHT);
 		
-		window.widthProperty().addListener(e ->
-		{
-//			for (HBox h : hBoxArray)
-//			{
-//				//TODO add responsivness to components
-//				h.setPadding(new Insets(16, (window.getWidth() - WIDTH) / 3 + 20 , 0, 0));
-//			}
-			bottomHBox.setSpacing((window.getWidth() - WIDTH) / 5 + 40);
-			//bottomHBox.setPadding(new Insets((window.getWidth() - WIDTH) / 10));
-		});
+		window.widthProperty().addListener(e -> 
+				bottomHBox.setSpacing((window.getWidth() - WIDTH) / 5 + 40));
+		restart.setOnKeyPressed(e -> e.consume());
 		
 		resetButton.setRipplerFill(Color.MAROON);
 		resetButton.setPadding(new Insets(10));
 		resetButton.setFont(COMMONFONT);
+		resetButton.setOnKeyPressed(e -> e.consume());
 		
 		resetButton.setOnAction(e -> 
 		{
@@ -105,6 +94,7 @@ public class ViewMain extends Application
 			field.clear();
 			field.setDisable(false);
 			textFlow = new TextFlow();
+			timeline.getKeyFrames().clear();
 			timeline = null;
 			previousWord = "";
 			timerLabel.setText(STARTTIME.toString());
@@ -355,7 +345,6 @@ public class ViewMain extends Application
 		borderPane.setBottom(bottomHBox);
 		window.getIcons().add(icon);
 		window.setScene(mainScene);
-		//window.setScene(completeScene("30", "299"));
 		window.show();
 	}
 	
@@ -367,11 +356,11 @@ public class ViewMain extends Application
 		
 		Scene scene = new Scene(vBox);
 		
-		Label congradulations = new Label("Congradulations!");
-		congradulations.setAlignment(Pos.CENTER);
-		congradulations.setTextAlignment(TextAlignment.CENTER);
-		congradulations.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		congradulations.setFont(new Font("Devanagari MT", 25));
+		Label congratulations = new Label("Congratulations!");
+		congratulations.setAlignment(Pos.CENTER);
+		congratulations.setTextAlignment(TextAlignment.CENTER);
+		congratulations.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		congratulations.setFont(new Font("Devanagari MT", 25));
 		
 		Label infoLabel = new Label(wpm + " WPM, " + cpm + " CPM");
 		infoLabel.setAlignment(Pos.CENTER);
@@ -385,7 +374,7 @@ public class ViewMain extends Application
 		restart.setPadding(new Insets(8, 20, 8, 20));
 		restart.setFont(new Font("Devanagari MT", 25));
 		
-		vBox.getChildren().addAll(congradulations, infoLabel, restart);
+		vBox.getChildren().addAll(congratulations, infoLabel, restart);
 		
 		return scene;
 	}
