@@ -77,8 +77,15 @@ public class ViewMain extends Application
 		window.setMinWidth(WIDTH);
 		window.setMinHeight(HEIGHT);
 		
+		window.focusedProperty().addListener(e -> 
+		{
+			if (window.isFocused()) window.setTitle(NAME);
+			else                    window.setTitle(NAME + " - Come Back!");
+		});
+		
 		window.widthProperty().addListener(e -> 
-				bottomHBox.setSpacing((window.getWidth() - WIDTH) / 5 + 40));
+				bottomHBox.setSpacing((window.getWidth() - WIDTH) / 3.1 + 70));
+		
 		restart.setOnKeyPressed(e -> e.consume());
 		
 		resetButton.setRipplerFill(Color.MAROON);
@@ -94,7 +101,8 @@ public class ViewMain extends Application
 			field.clear();
 			field.setDisable(false);
 			textFlow = new TextFlow();
-			timeline.getKeyFrames().clear();
+			if (timeline != null)
+				timeline.getKeyFrames().clear();
 			timeline = null;
 			previousWord = "";
 			timerLabel.setText(STARTTIME.toString());
@@ -130,7 +138,7 @@ public class ViewMain extends Application
 		}
 		
 		field.setFocusColor  (Color.MAROON);
-		field.setUnFocusColor(Color.CADETBLUE);
+		field.setUnFocusColor(Color.CORNFLOWERBLUE);
 		field.setFont(COMMONFONT);
 		field.setPadding(new Insets(5, 30, 0, 30));
 		field.setPromptText("Start typing!");
